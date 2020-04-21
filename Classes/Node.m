@@ -8,7 +8,7 @@ classdef Node
         tiles                   % Indices of tiles adjacent to node
         structure   Structure   % Structure on node
         player                  % Player to which structure belongs
-        %harbor      Harbor      % Harbor on node, if any
+        harbor      Harbor      % Harbor on node, if any
         coordinates             % (x,y)-coordinates of node
     end
     

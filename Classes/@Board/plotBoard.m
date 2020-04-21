@@ -4,6 +4,11 @@ function plotBoard(obj, varargin)
 % This function plots the game board based on the current state.
 % -------------------------------------------------------------------------
 
+% Set player colors
+colors = {[0 0.4770 0.7410], [0.4660 0.6740 0.1880], ...
+    [0.8500 0.3250 0.0980], [0.6350 0.0780 0.1840], ...
+    [0.4940 0.1840 0.5560], [0.9290 0.6940 0.1250]};
+
 % Initialize the figure
 figure; hold on; set(gca, 'Visible', 'off')
 
@@ -33,24 +38,62 @@ for i = 1:19
     plot(x, y, '-k'); fill(x, y, color, 'FaceAlpha', 0.5);
     
     % List the tile number
-    text(obj.tiles{i}.centerpoint(1), obj.tiles{i}.centerpoint(2), ...
-        string(obj.tiles{i}.number), 'Color', [1 1 1])
+    text(obj.tiles{i}.centerpoint(1) - 0.1, obj.tiles{i}.centerpoint(2), ...
+        string(obj.tiles{i}.number), 'Color', [1 1 1], 'FontSize', 16)
     
 end
 
 % For each node...
 for i = 1:length(obj.nodes)
+    
     % Plot the node on a scatterplot
-    scatter(obj.nodes{i}.coordinates(1), obj.nodes{i}.coordinates(2), 'MarkerFaceColor', 'k')
+    scatter(obj.nodes{i}.coordinates(1), obj.nodes{i}.coordinates(2), ...
+        'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k')
     % Plot the node label
-    text(obj.nodes{i}.coordinates(1), obj.nodes{i}.coordinates(2), "Node " + string(i), 'Color', 'r')
+    text(obj.nodes{i}.coordinates(1) + 0.1, obj.nodes{i}.coordinates(2), ...
+        "Node " + string(i), 'Color', 'k')
+    
+    % If the node has a harbor, indicate the harbor
+    if ~isempty(obj.nodes{i}.harbor)
+        text(obj.nodes{i}.coordinates(1) + 0.1, obj.nodes{i}.coordinates(2) - 0.25, ...
+            "Harbor: " + string(obj.nodes{i}.harbor.resource))
+    end
+    
+    % If the node has a house or city, plot a modified marker TODO
+    if obj.nodes{i}.structure ~= Structure.none
+        
+        % Set player color
+        color = colors{obj.nodes{i}.player};
+        
+        switch obj.nodes{i}.structure
+            case Structure.house
+                scatter(obj.nodes{i}.coordinates(1), obj.nodes{i}.coordinates(2), ...
+                    'MarkerFaceColor', color, 'MarkerEdgeColor', color, 'SizeData', 100)
+            case Structure.city
+                scatter(obj.nodes{i}.coordinates(1), obj.nodes{i}.coordinates(2), ...
+                    'square', 'MarkerFaceColor', color, 'MarkerEdgeColor', color, 'SizeData', 100)
+        end
+    end
+    
 end
 
-% Highlight an edge
-% edgeNumber = 5;
-% idx = find(A == edgeNumber, 1);
-% [i, j] = ind2sub(size(A), idx);
-% plot([nodes(1, i), nodes(1, j)], [nodes(2, i), nodes(2, j)], '-k', 'LineWidth', 2)
+% For each edge...
+for i = 1:length(obj.edges)
+    % If the edge has a structure...
+    if obj.edges{i}.structure ~= Structure.none
+        
+        % Set player color
+        color = colors{obj.edges{i}.player};
+        
+        % Get the starting and ending nodes
+        startNode = obj.nodes{obj.edges{i}.nodePair(1)}.coordinates;
+        endNode = obj.nodes{obj.edges{i}.nodePair(2)}.coordinates;
+        
+        % Plot a road in between the nodes
+        plot([startNode(1) endNode(1)], [startNode(2) endNode(2)], 'LineWidth', 3, 'Color', color)
+        
+    end
+end
 
 end
 

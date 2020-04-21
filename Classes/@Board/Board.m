@@ -35,7 +35,7 @@ classdef Board
             obj.bank.knight = 13; obj.bank.monopoly = 2;
             obj.bank.plenty = 1; obj.bank.sheep = 19; 
             obj.bank.stone = 19; obj.bank.victoryPoint = 5; 
-            obj.bank.wheat = 19; obj.bank.wheat = 19;
+            obj.bank.wheat = 19; obj.bank.wood = 19;
             
             % Initialize game board
             obj = obj.initialize();
@@ -44,6 +44,7 @@ classdef Board
             obj.players = cell(obj.numPlayers, 1);  % Vector of players
             for i = 1:obj.numPlayers
                 obj.players{i} = Player("Player " + string(i), i);
+                obj.players{i}.adjacency = zeros(length(obj.nodes));
             end
             
         end
@@ -56,6 +57,28 @@ classdef Board
         
         % Roll dice
         function obj = roll(obj); obj.dice = randi([1, 6], 1) + randi([1, 6], 1); end
+        
+        % Trade resources with player
+        [obj, isValid] = tradePlayer(obj, fromPlayer, toPlayer, fromResource, ...
+            toResource, numFrom, numTo)
+        
+        % Trade resources with bank
+        [obj, isValid] = tradeBank(obj, player, fromResource, varargin)
+        
+        % Place a structure on the board
+        [obj, isValid] = placeStructure(obj, player, structure, position)
+        
+        % Use a chance card
+        [obj, isValid] = useChance(obj, player, card, varargin)
+        
+        % Move the thief and enforce the penalty
+        [obj, isValid] = moveThief(obj, destination, byPlayer, toPlayer)
+        
+        % Distribute resources upon non-7 roll
+        obj = distribute(obj, roll)
+        
+        % Compute victory points (keep VP chance cards secret)
+        obj = computeVP(obj, player) % TODO: COMPUTE LONGEST ROAD IN PLACESTRUCTURE.M
         
     end
     

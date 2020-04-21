@@ -4,7 +4,7 @@ classdef Card
     
     enumeration
         buildRoad, knight, victoryPoint, monopoly, plenty, ...
-            sheep, wheat, wood, brick, stone
+            sheep, wheat, wood, brick, stone, chance, none
     end
     
 end

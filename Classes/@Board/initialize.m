@@ -144,11 +144,38 @@ end
 % Set placeholder for edges
 obj.edges = cell(edgeCounter, 1);
 
+% Find the indices of all edges in the adjacency matrix
+edgeIdx = find(triu(obj.adjacency) > 0);
+
 % For each edge...
 for i = 1:edgeCounter
+    % Get the node pair for the current edge
+    [x, y] = ind2sub(size(obj.adjacency), edgeIdx(i));
     % Instantiate the Edge object
-    obj.edges{i} = Edge(i);
+    obj.edges{i} = Edge(i, [x, y]);
 end
+
+% There are 9 harbors total, which may be assigned randomly. First,
+% initialize each of the 9 available harbors:
+harbors = cell(9, 1);   % Initialize cell array
+harbors{1} = Harbor(Resource.brick, 2); harbors{2} = Harbor(Resource.sheep, 2);
+harbors{3} = Harbor(Resource.stone, 2); harbors{4} = Harbor(Resource.wheat, 2);
+harbors{5} = Harbor(Resource.wood, 2); harbors(6:9) = {Harbor(Resource.all, 3)};
+% Select order of assignment
+idx = randperm(9);
+
+% Harbors are located on:
+% Nodes 4/5, Nodes 17/18, Nodes 27/41, Nodes 49/50, Nodes 51/52, Nodes
+% 46/47, Nodes 36/38, Nodes 11/25, and Nodes 9/10
+obj.nodes{4}.harbor = harbors{idx(1)}; obj.nodes{5}.harbor = obj.nodes{4}.harbor;
+obj.nodes{17}.harbor = harbors{idx(2)}; obj.nodes{18}.harbor = obj.nodes{17}.harbor;
+obj.nodes{27}.harbor = harbors{idx(3)}; obj.nodes{41}.harbor = obj.nodes{27}.harbor;
+obj.nodes{49}.harbor = harbors{idx(4)}; obj.nodes{50}.harbor = obj.nodes{49}.harbor;
+obj.nodes{51}.harbor = harbors{idx(5)}; obj.nodes{52}.harbor = obj.nodes{51}.harbor;
+obj.nodes{46}.harbor = harbors{idx(6)}; obj.nodes{47}.harbor = obj.nodes{46}.harbor;
+obj.nodes{36}.harbor = harbors{idx(7)}; obj.nodes{38}.harbor = obj.nodes{36}.harbor;
+obj.nodes{11}.harbor = harbors{idx(8)}; obj.nodes{25}.harbor = obj.nodes{11}.harbor;
+obj.nodes{9}.harbor = harbors{idx(9)}; obj.nodes{10}.harbor = obj.nodes{9}.harbor;
 
 end
 

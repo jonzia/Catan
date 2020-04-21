@@ -5,6 +5,7 @@ classdef Edge
     % Class Properties
     properties (SetAccess = public, GetAccess = public)
         number                  % Edge number
+        nodePair                % Pair of nodes joined by edge
         structure   Structure   % Structure present on edge
         player                  % Player to which structure belongs
     end
@@ -13,8 +14,9 @@ classdef Edge
     methods (Access = public)
         
         % Class constructor
-        function obj = Edge(number)
-            obj.number = number; obj.structure = Structure.none; obj.player = [];
+        function obj = Edge(number, nodePair)
+            obj.number = number; obj.structure = Structure.none;
+            obj.player = []; obj.nodePair = nodePair;
         end
         
         % Add structure to Edge
