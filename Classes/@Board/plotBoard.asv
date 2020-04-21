@@ -1,0 +1,82 @@
+function plotBoard(obj, varargin)
+
+% -------------------------------------------------------------------------
+% This function plots the game board based on the current state.
+% -------------------------------------------------------------------------
+
+% Initialize the figure
+figure; hold on; set(gca, 'Visible', 'off')
+
+% For each tile...
+for i = 1:19
+    
+    % Plot the tile
+    
+end
+
+nodes = [];
+
+% Hexagon center points
+x_start = 2*sin(pi/3)*(0:2); y_start = zeros(1, 3);
+x_start = [x_start (2*sin(pi/3)*(0:3) - sin(pi/3))]; y_start = [y_start -1.5*ones(1, 4)];
+x_start = [x_start (2*sin(pi/3)*(0:4) - 2*sin(pi/3))]; y_start = [y_start -3*ones(1, 5)];
+x_start = [x_start (2*sin(pi/3)*(0:3) - sin(pi/3))]; y_start = [y_start -4.5*ones(1, 4)];
+x_start = [x_start 2*sin(pi/3)*(0:2)]; y_start = [y_start -6*ones(1, 3)];
+
+for i = 1:length(x_start)
+    t = ((1/12):(1/6):1)'*2*pi + pi/2;
+    x = sin(t) + x_start(i); x = [x; x(1)];
+    y = cos(t) + y_start(i); y = [y; y(1)];
+    x = round(x, 4); y = round(y, 4);
+    
+    for j = 1:length(x)
+        if ~isempty(nodes)
+            nice = ismember(nodes', [x(j); y(j)]', 'rows');
+            if isempty(find(nice == true, 1))
+                nodes = [nodes [x(j); y(j)]];
+            end
+        else
+            nodes = [x(j); y(j)];
+        end
+    end
+    
+    plot(x,y, '-k')
+    fill(x, y, 'g', 'FaceAlpha', 0.2)
+end
+
+numNodes = size(nodes, 2);
+
+% Plot nodes
+for i = 1:numNodes
+    scatter(nodes(1, i), nodes(2, i), 'ok')
+end
+
+% Plot text
+for i = 1:numNodes
+    text(nodes(1, i), nodes(2, i), "Node " + string(i), 'Color', 'r')
+end
+
+% Build adjacency (all points w/in so much from this point are adjacent)
+A = zeros(numNodes); edgeCounter = 1;
+for i = 1:numNodes
+    for j = 1:numNodes
+        if j == i; continue; end
+        if A(i, j) ~= 0 || A(j, i) ~= 0; continue; end
+        if norm(nodes(:, i) - nodes(:, j)) < 1.1
+            A(i, j) = edgeCounter; A(j, i) = A(i, j);
+            edgeCounter = edgeCounter + 1;
+        end
+    end
+end
+
+% Highlight an edge
+edgeNumber = 5;
+idx = find(A == edgeNumber, 1);
+[i, j] = ind2sub(size(A), idx);
+plot([nodes(1, i), nodes(1, j)], [nodes(2, i), nodes(2, j)], '-k', 'LineWidth', 2)
+
+% Assign nodes to the pre-defined tile objects so that nodes can be
+% deactivated when a thief is moved to the tile
+
+end
+
