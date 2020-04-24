@@ -177,5 +177,8 @@ obj.nodes{36}.harbor = harbors{idx(7)}; obj.nodes{38}.harbor = obj.nodes{36}.har
 obj.nodes{11}.harbor = harbors{idx(8)}; obj.nodes{25}.harbor = obj.nodes{11}.harbor;
 obj.nodes{9}.harbor = harbors{idx(9)}; obj.nodes{10}.harbor = obj.nodes{9}.harbor;
 
+% Write output to object
+obj.harbors = harbors;
+
 end
 

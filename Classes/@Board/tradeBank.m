@@ -1,4 +1,4 @@
-function [obj, isValid] = tradeBank(obj, player, fromResource, varargin)
+function [obj, isValid, cost] = tradeBank(obj, player, fromResource, varargin)
 
 % -------------------------------------------------------------------------
 % This function conducts a trade between a player in the bank. The trade

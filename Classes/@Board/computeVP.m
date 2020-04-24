@@ -1,7 +1,7 @@
 function obj = computeVP(obj, player)
 
 % -------------------------------------------------------------------------
-% This function computes the victry points earned by a player.
+% This function computes the victory points earned by a player.
 % -------------------------------------------------------------------------
 
 % Public and private VP counters
@@ -29,6 +29,7 @@ end
 % Does the player have the longest road? If so, add two points
 hasLongestRoad = true;
 for i = 1:obj.numPlayers
+    if i == player; continue; end
     if obj.players{i}.road_length >= obj.players{player}.road_length
         hasLongestRoad = false;
     end
@@ -41,6 +42,4 @@ VP_private = VP_private + obj.players{player}.cards.victoryPoint;
 obj.players{player}.VP_public = VP_public;
 obj.players{player}.VP_private = VP_private;
     
-end
-
 end

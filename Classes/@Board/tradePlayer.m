@@ -16,22 +16,22 @@ function [obj, isValid] = tradePlayer(obj, fromPlayer, toPlayer, fromResource, .
 % Determine whether this trade is valid; if not, return
 isValid = true;
 % Does the originating player have enough cards?
-if obj.player{fromPlayer}.cards.(string(fromResource)) < numFrom
+if obj.players{fromPlayer}.cards.(string(fromResource)) < numFrom
     isValid = false; return
     % Does the trade partner have enough cards?
-elseif obj.player{toPlayer}.cards.(string(toResource)) < numTo
+elseif obj.players{toPlayer}.cards.(string(toResource)) < numTo
     isValid = false; return
 end
 
 % If the trade is valid, conduct it
-obj.player{fromPlayer}.cards.(string(fromResource)) = ...
-    obj.player{fromPlayer}.cards.(string(fromResource)) - numFrom;
-obj.player{toPlayer}.cards.(string(fromResource)) = ...
-    obj.player{toPlayer}.cards.(string(fromResource)) + numFrom;
-obj.player{toPlayer}.cards.(string(toResource)) = ...
-    obj.player{toPlayer}.cards.(string(toResource)) - numTo;
-obj.player{fromPlayer}.cards.(string(toResource)) = ...
-    obj.player{fromPlayer}.cards.(string(toResource)) + numTo;
+obj.players{fromPlayer}.cards.(string(fromResource)) = ...
+    obj.players{fromPlayer}.cards.(string(fromResource)) - numFrom;
+obj.players{toPlayer}.cards.(string(fromResource)) = ...
+    obj.players{toPlayer}.cards.(string(fromResource)) + numFrom;
+obj.players{toPlayer}.cards.(string(toResource)) = ...
+    obj.players{toPlayer}.cards.(string(toResource)) - numTo;
+obj.players{fromPlayer}.cards.(string(toResource)) = ...
+    obj.players{fromPlayer}.cards.(string(toResource)) + numTo;
 
 end
 

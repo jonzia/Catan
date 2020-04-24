@@ -47,13 +47,15 @@ if card == Card.buildRoad
     obj.players{player}.cards.brick = obj.players{player}.cards.brick + 2;
     obj.players{player}.cards.wood = obj.players{player}.cards.wood + 2;
     % Determine whether BOTH roads are valid
-    [~, isValid_1] = obj.placeStructure(player, Structure.road, varargin{1}(1));
-    [~, isValid_2] = obj.placeStructure(player, Structure.road, varargin{1}(2));
+    [~, isValid] = obj.placeStructure(player, Structure.road, varargin{1}(1));
+    if isValid
+        [temp, ~] = obj.placeStructure(player, Structure.road, varargin{1}(1));
+        [~, isValid] = temp.placeStructure(player, Structure.road, varargin{1}(2));
+    end
     % If either is invalid, cancel the transaction; else, place roads
-    if ~isValid_1 || ~isValid_2
+    if ~isValid
         obj.players{player}.cards.brick = obj.players{player}.cards.brick - 2;
         obj.players{player}.cards.wood = obj.players{player}.cards.wood - 2;
-        isValid = false;
         disp("Error in Board.useChance(): Invalid road selection")
         return
     else
@@ -126,16 +128,30 @@ end
 % -------------------------------------------------------------------------
 if card == Card.plenty
     
-    % varargin{1} may only be a resource card
-    if varargin{1} ~= Card.brick && varargin{1} ~= Card.sheep && ...
-            varargin{1} ~= Card.stone && varargin{1} ~= Card.wheat && ...
-            varargin{1} ~= Card.wood
-        disp("Error in Board.useChance(): Only resource cards may be obtained from bank")
-        isValid = false; return
+    % varargin{1} may only contain resource cards
+    for i = 1:length(varargin{1})
+        if varargin{1}(i) ~= Card.brick && varargin{1}(i) ~= Card.sheep && ...
+                varargin{1}(i) ~= Card.stone && varargin{1}(i) ~= Card.wheat && ...
+                varargin{1}(i) ~= Card.wood
+            disp("Error in Board.useChance(): Only resource cards may be obtained from bank")
+            isValid = false; return
+        end
     end
     
-    % Take two resources from the bank, if possible
-    [obj, isValid] = obj.tradeBank(player, varargin{1}, -2);
-    if ~isValid; return; end
+    if length(varargin{1}) == 1
+        % Take two resources from the bank, if possible
+        [obj, isValid] = obj.tradeBank(player, varargin{1}, -2);
+        if ~isValid; return; end
+    elseif length(varargin{1}) == 2
+        % Take one of each resources from the bank, if both possible
+        [temp, isValid] = obj.tradeBank(player, varargin{1}(1), -1);
+        if ~isValid; return; end
+        [temp_2, isValid] = temp.tradeBank(player, varargin{1}(2), -1);
+        if ~isValid; return; end
+        obj = temp_2;   % Return the object if both are possible
+    else
+        disp("Error in Board.useChance(): Invalid number of resource cards selected")
+        isValid = false; return
+    end
     
 end

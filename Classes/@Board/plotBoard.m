@@ -2,6 +2,9 @@ function plotBoard(obj, varargin)
 
 % -------------------------------------------------------------------------
 % This function plots the game board based on the current state.
+%
+% Arguments (optional):
+% - handle      fig     Figure handle, if figure already initialized
 % -------------------------------------------------------------------------
 
 % Set player colors
@@ -10,7 +13,8 @@ colors = {[0 0.4770 0.7410], [0.4660 0.6740 0.1880], ...
     [0.4940 0.1840 0.5560], [0.9290 0.6940 0.1250]};
 
 % Initialize the figure
-figure; hold on; set(gca, 'Visible', 'off')
+if isempty(varargin); figure; end
+hold on; set(gca, 'Visible', 'off')
 
 % For each tile...
 for i = 1:19
@@ -38,8 +42,15 @@ for i = 1:19
     plot(x, y, '-k'); fill(x, y, color, 'FaceAlpha', 0.5);
     
     % List the tile number
-    text(obj.tiles{i}.centerpoint(1) - 0.1, obj.tiles{i}.centerpoint(2), ...
-        string(obj.tiles{i}.number), 'Color', [1 1 1], 'FontSize', 16)
+    if ~obj.tiles{i}.hasThief
+        % If the tile doesn't have the thief, plot normally
+        text(obj.tiles{i}.centerpoint(1) - 0.1, obj.tiles{i}.centerpoint(2), ...
+            string(obj.tiles{i}.number), 'Color', [1 1 1], 'FontSize', 16)
+    else
+        % Else, indicate that the tile has the thief
+        text(obj.tiles{i}.centerpoint(1) - 0.1, obj.tiles{i}.centerpoint(2), ...
+            string(obj.tiles{i}.number) + " (T)", 'Color', [1 1 1], 'FontSize', 16)
+    end
     
 end
 

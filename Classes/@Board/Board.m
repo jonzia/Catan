@@ -63,7 +63,7 @@ classdef Board
             toResource, numFrom, numTo)
         
         % Trade resources with bank
-        [obj, isValid] = tradeBank(obj, player, fromResource, varargin)
+        [obj, isValid, cost] = tradeBank(obj, player, fromResource, varargin)
         
         % Place a structure on the board
         [obj, isValid] = placeStructure(obj, player, structure, position)
