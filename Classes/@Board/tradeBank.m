@@ -1,4 +1,4 @@
-function [obj, isValid, cost] = tradeBank(obj, player, fromResource, varargin)
+function [obj, isValid, varargout] = tradeBank(obj, player, fromResource, varargin)
 
 % -------------------------------------------------------------------------
 % This function conducts a trade between a player in the bank. The trade
@@ -24,6 +24,11 @@ function [obj, isValid, cost] = tradeBank(obj, player, fromResource, varargin)
 % ~~~ OR ~~~
 % transaction       Int         >0: Give cards to bank
 %                               <0: Take cards from bank
+%
+% Outputs
+% varargout{1} = obj
+% varargout{2} = isValid
+% varargout{3} = cost
 % -------------------------------------------------------------------------
 
 % Parse optional input arguments
@@ -129,6 +134,9 @@ if toResource ~= Resource.none
         end   
     end
     
+    % Set output arguments
+    if nargout > 2; varargout{1} = cost; end
+    
     % If the deal is valid, conduct it at the minimum cost
     [obj, isValid] = obj.tradeBank(player, [fromResource, toResource], [cost, -1]);
     if ~isValid; return; end
@@ -143,7 +151,7 @@ if card ~= Card.none
     
     % Determine whether the bank has enough of the desired resource
     chanceCards = [obj.bank.buildRoad obj.bank.knight obj.bank.monopoly ...
-        obj.plenty obj.bank.victoryPoint];
+        obj.bank.plenty obj.bank.victoryPoint];
     if sum(chanceCards) == 0; isValid = false; return; end
 
     % Get the nonzero indices of chanceCards and select a random index
@@ -186,3 +194,4 @@ if forStructure ~= Structure.none
 
 end
 
+end

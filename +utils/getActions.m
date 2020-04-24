@@ -163,7 +163,7 @@ if board.players{player}.cards.plenty > 0
     for i = 1:length(resources)
         for j = 1:length(resources)
             if pair(i, j) == 0; continue; end
-                [temp, isValid] = board.useChance(player, Card.monopoly, [resources(i), resources(j)]);
+                [temp, isValid] = board.useChance(player, Card.plenty, [resources(i), resources(j)]);
                 if isValid; actions{end + 1} = temp; end
                 % Add an entry to the log
                 if isValid; log{end + 1} = Action(Type.playChance, Card.plenty); end
@@ -190,6 +190,12 @@ for i = 1:length(resources)
         end
         
     end
+end
+
+% Purchase a chance card, if possible
+[temp, isValid] = board.tradeBank(player, Resource.all, Card.chance);
+if isValid; actions{end + 1} = temp;
+    log{end + 1} = Action(Type.tradeBank, {Resource.all Card.chance 1});
 end
 
 % -------------------------------------------------------------------------

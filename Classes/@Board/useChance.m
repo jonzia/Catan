@@ -114,8 +114,8 @@ if card == Card.monopoly
         % If they have any cards of the desired resource...
         if obj.players{i}.cards.(string(varargin{1})) > 0
             % Trade all the cards to the monopolizing player for nothing
-            [obj, ~] = obj.tradePlayer(varargin{2}, player, varargin{1}, varargin{1}, ...
-                [obj.players{i}.cards.(string(varargin{1})) 0]);
+            [obj, ~] = obj.tradePlayer(i, player, varargin{1}, varargin{1}, ...
+                obj.players{i}.cards.(string(varargin{1})), 0);
         end
         
     end
@@ -130,9 +130,9 @@ if card == Card.plenty
     
     % varargin{1} may only contain resource cards
     for i = 1:length(varargin{1})
-        if varargin{1}(i) ~= Card.brick && varargin{1}(i) ~= Card.sheep && ...
-                varargin{1}(i) ~= Card.stone && varargin{1}(i) ~= Card.wheat && ...
-                varargin{1}(i) ~= Card.wood
+        if varargin{1}(i) ~= Resource.brick && varargin{1}(i) ~= Resource.sheep && ...
+                varargin{1}(i) ~= Resource.stone && varargin{1}(i) ~= Resource.wheat && ...
+                varargin{1}(i) ~= Resource.wood
             disp("Error in Board.useChance(): Only resource cards may be obtained from bank")
             isValid = false; return
         end
