@@ -118,7 +118,7 @@ if board.players{player}.cards.knight > 0
         % Get a list of non-self players with nodes bordering the tile
         players = [];
         for j = 1:length(board.nodes)
-            if board.nodes{j}.structure ~= Structure.none
+            if board.nodes{j}.structure ~= Structure.none && any(ismember(board.nodes{j}.tiles, tile))
                 players = [players board.nodes{j}.player];
             end
         end; players(players == player) = []; players = unique(players);

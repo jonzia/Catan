@@ -75,7 +75,7 @@ if card == Card.knight
     [obj, isValid] = obj.tradeBank(player, Card.knight, 1);
     if ~isValid; return; end
     
-    [obj, isValid] = obj.moveThief(obj, varargin{1}, player, varargin{2});
+    [obj, isValid] = obj.moveThief(varargin{1}, player, varargin{2});
     if ~isValid; return; end
     
     % Increment the player's knight counter

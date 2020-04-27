@@ -20,11 +20,11 @@ for i = 1:length(obj.nodes)
         VP_public = VP_public + 2; VP_private = VP_private + 2;
     end
     
-    % Does the player have the largest army card? If so, add two points
-    if obj.players{player}.hasArmyCard; ...
-            VP_public = VP_public + 2; VP_private = VP_private + 2; end
-    
 end
+
+% Does the player have the largest army card? If so, add two points
+if obj.players{player}.hasArmyCard; ...
+        VP_public = VP_public + 2; VP_private = VP_private + 2; end
     
 % Does the player have the longest road? If so, add two points
 hasLongestRoad = true;

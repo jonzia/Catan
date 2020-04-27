@@ -138,11 +138,11 @@ for i = 1:board.numPlayers
     state(idx) = board.players{player}.cards.stone; inc();
     state(idx) = board.players{player}.cards.wheat; inc();
     state(idx) = board.players{player}.cards.wood; inc();
-    state(idx) = board.players{player}.cards.buildRoad; inc();
-    state(idx) = board.players{player}.cards.knight; inc();
-    state(idx) = board.players{player}.cards.monopoly; inc();
-    state(idx) = board.players{player}.cards.plenty; inc();
-    state(idx) = board.players{player}.cards.victoryPoint; inc();
+    state(idx) = board.players{player}.cards.buildRoad + ...
+        board.players{player}.cards.knight + ...
+        board.players{player}.cards.monopoly + ...
+        board.players{player}.cards.plenty + ...
+        board.players{player}.cards.victoryPoint; inc();
 end
 
 % Function for incrementing counter

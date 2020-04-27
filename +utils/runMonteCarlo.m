@@ -5,11 +5,11 @@ function [results, VP] = runMonteCarlo(varargin)
 % provided model or random action selection.
 % 
 % Arguments (optional):
-% - model
-% - epsilon
-% - lambda
-% - numPlayers
-% - maxActions
+% - model       {Model}     Player-specific models for ranking actions
+% - epsilon                 Likelihood [0, 1] for selecting optiomal action
+% - lambda                  Maximum game length
+% - numPlayers              [1, 6]
+% - maxActions              Maximum actions by player per turn
 % -------------------------------------------------------------------------
 
 % Set placeholders for log and results
@@ -28,10 +28,10 @@ if ~isempty(varargin)
 end
 
 % Set defaults for optional arguments
-if ~exist('model', 'var'); model = []; end
 if ~exist('epsilon', 'var'); epsilon = 0.5; end
 if ~exist('lambda', 'var'); lambda = 1000; end
 if ~exist('numPlayers', 'var'); numPlayers = 2; end
+if ~exist('model', 'var'); model = cell(numPlayers, 1); end
 if ~exist('maxActions', 'var'); maxActions = 5; end
 
 % Initialize and visualize game board
@@ -47,9 +47,9 @@ for i = order
     % Return all possible actions regarding house selection
     [actions, ~] = board.initialHouse(i);
     % Rank the actions based on the model
-    rank = utils.rankActions(actions, []);
+    rank = utils.rankActions(actions, model{i}, i);
     % Select a greedy action with probability epsilon
-    if rand() < epsilon; board = actions{rank == 1};
+    if rand() < epsilon; board = actions{rank == max(rank)};
     else; board = actions{randi([1, length(actions)])};
     end
 end
@@ -90,16 +90,16 @@ while ~gameOVER
             % If the player does not need to discard, continue
             if isempty(actions); continue; end
             % Else, select the optimal action with probability epsilon
-            rank = utils.rankActions(actions, []);
-            if rand() < epsilon; board = actions{rank == 1};
+            rank = utils.rankActions(actions, model{i}, i);
+            if rand() < epsilon; board = actions{rank == max(rank)};
             else; board = actions{randi([1, length(actions)])};
             end
         end
         % Upon discarding, the current player may move the thief
         [actions, ~] = utils.rollSeven(board, player);
         % Select the optimal action with probability epsilon
-        rank = utils.rankActions(actions, []);
-        if rand() < epsilon; board = actions{rank == 1};
+        rank = utils.rankActions(actions, model{player}, player);
+        if rand() < epsilon; board = actions{rank == max(rank)};
         else; board = actions{randi([1, length(actions)])};
         end
         
@@ -124,7 +124,7 @@ while ~gameOVER
         [actions, log] = utils.getActions(board, player);
         
         % Evaluate actions, and choose optimal action with prob epsilon
-        rank = utils.rankActions(actions, []);
+        rank = utils.rankActions(actions, model{player}, player);
         if rand() < epsilon
             
             % Set placeholders for selecting non-prohibited action
@@ -155,7 +155,7 @@ while ~gameOVER
         if log{idx}.actionType ~= Type.tradePlayer; board = actions{idx};
         else
             % Else, have the target player rank the proposed board states
-            rank = utils.rankActions({board, actions{idx}}, []);
+            rank = utils.rankActions({board, actions{idx}}, model{player}, player);
             % If they find the trade favorable, proceed; else, add the
             % trade to the temporary prohibited turn list and pass
             if rank(2) == 1; board = actions{idx};
@@ -184,10 +184,8 @@ while ~gameOVER
     for i = 1:numPlayers
         board = board.computeVP(i);     % Compute victory points by player
         % If the player has won, end the game
-        if board.players{i}.VP_private == 10; gameOVER = true; end
+        if board.players{i}.VP_private >= 10; gameOVER = true; end
     end
-    
-    disp(turnCounter)
     
 end
 

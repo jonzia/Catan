@@ -89,6 +89,7 @@ if structure == Structure.city
     if ~isValid; return; end
     obj.nodes{position}.structure = Structure.city;
     obj.players{player}.structures.city = obj.players{player}.structures.city - 1;
+    obj.players{player}.structures.house = obj.players{player}.structures.house + 1;
     
 end
 
