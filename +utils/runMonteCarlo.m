@@ -48,8 +48,7 @@ for i = order
     [actions, ~] = board.initialHouse(i);
     % Rank the actions based on the model
     rank = utils.rankActions(actions, model{i}, i);
-    % Select a greedy action with probability epsilon
-    if rand() < epsilon; board = actions{rank == max(rank)};
+    if rand() < epsilon; board = actions{rank(1)};
     else; board = actions{randi([1, length(actions)])};
     end
 end
@@ -91,7 +90,7 @@ while ~gameOVER
             if isempty(actions); continue; end
             % Else, select the optimal action with probability epsilon
             rank = utils.rankActions(actions, model{i}, i);
-            if rand() < epsilon; board = actions{rank == max(rank)};
+            if rand() < epsilon; board = actions{rank(1)};
             else; board = actions{randi([1, length(actions)])};
             end
         end
@@ -99,7 +98,7 @@ while ~gameOVER
         [actions, ~] = utils.rollSeven(board, player);
         % Select the optimal action with probability epsilon
         rank = utils.rankActions(actions, model{player}, player);
-        if rand() < epsilon; board = actions{rank == max(rank)};
+        if rand() < epsilon; board = actions{rank(1)};
         else; board = actions{randi([1, length(actions)])};
         end
         
@@ -132,7 +131,7 @@ while ~gameOVER
             % If the log does not contain this action, proceed
             while prohibFLAG
                 % Get the optimal index
-                idx = rank(rank == c);
+                idx = rank(c);
                 % If the log does not contain this action, proceed
                 if ~utils.logContains(prohibited, log{idx}); prohibFLAG = false;
                 else; c = c + 1;
@@ -158,7 +157,7 @@ while ~gameOVER
             rank = utils.rankActions({board, actions{idx}}, model{player}, player);
             % If they find the trade favorable, proceed; else, add the
             % trade to the temporary prohibited turn list and pass
-            if rank(2) == 1; board = actions{idx};
+            if rank(1) == 2; board = actions{idx};
             else; prohibited{end + 1} = log{idx};
             end
         end

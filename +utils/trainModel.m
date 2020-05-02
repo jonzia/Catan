@@ -21,6 +21,7 @@ function [net, winPercentage, data, targets] = trainModel(varargin)
 % - lambda          Int         Maximum turns per game (d: 1000)
 % - maxActions      Int         Maximum number of actions / turn (d: 5)
 % - validFreq       Int         Validation frequency (d: 10)
+% - path            String      Path to save data (d: "")
 % -------------------------------------------------------------------------
 
 % Set defaults for optional arguments
@@ -28,7 +29,7 @@ numPlayers = 2; lrInit = 0.001; lrDecay = 0.1;
 lrDecayCounter = 3; numRounds = 10; numGames = 100; numTest = 10;
 split = 0.7; dropout = 0.2; maxEpochs = 100; batchSize = 32;
 patience = 5; epsilon = 0.75; lambda = 1000; maxActions = 5;
-validFreq = 10;
+validFreq = 10; path = "";
 
 % Parse optional input arguments
 if ~isempty(varargin)
@@ -49,6 +50,7 @@ if ~isempty(varargin)
         elseif strcmp(varargin{arg}, 'lambda'); lambda = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'validFreq'); validFreq = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'path'); path = varargin{arg + 1};
         end
     end
 end
@@ -56,23 +58,20 @@ end
 % Define model architecture
 layers = [
     sequenceInputLayer(165 + (numPlayers - 1)*10,"Name","sequence")
-    fullyConnectedLayer(100,"Name","fc_1","BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    fullyConnectedLayer(100,"Name","fc_1") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_1")
     dropoutLayer(dropout,"Name","dropout_1")
-    fullyConnectedLayer(25,"Name","fc_2","BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    fullyConnectedLayer(25,"Name","fc_2") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_2")
     dropoutLayer(dropout,"Name","dropout_2")
-    fullyConnectedLayer(1,"Name","fc_3","BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    fullyConnectedLayer(1,"Name","fc_3") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_3")
     regressionLayer("Name","regressionoutput")];
 
 h = waitbar(0, 'Please wait...');
 
-% Initialize counter and win percentage placeholders
-counter = 0; winPercentage = zeros(numRounds, 1);
-
-% Set data and target placeholders
-data = []; targets = [];
+% Initialize placeholders
+winPercentage = zeros(numRounds, 1); data = []; targets = []; counter = 0;
 
 % For each round...
 for rnd = 1:numRounds
@@ -137,7 +136,7 @@ for rnd = 1:numRounds
     for i = 1:lrDecayCounter
     
         % Set training options
-        if i ~= lrDecaycounter
+        if i ~= lrDecayCounter
             options = trainingOptions('adam', 'MaxEpochs', maxEpochs, 'Plots', 'training-progress', ...
                 'Verbose', 0, 'MiniBatchSize', batchSize, 'Shuffle', 'every-epoch', ...
                 'ValidationPatience', patience, 'InitialLearnRate', LR, ...
@@ -167,12 +166,12 @@ for rnd = 1:numRounds
     for i = 1:numTest
         waitbar(i/numTest, h, "Testing Model " + string(i) + "/" + string(numTest));
         [~, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', ...
-            {net, []}, 'epsilon', epsilon, 'lambda', lambda, 'maxActions', maxActions);
+            {net, []}, 'epsilon', 1, 'lambda', lambda, 'maxActions', maxActions);
         if vp(end, 1) > vp(end, 2); winPercentage(rnd) = winPercentage(rnd) + 1/numTest; end
     end
     
     % Save the workspace after each round
-    save("round_" + string(rnd) + ".mat")
+    save(path + "round_" + string(rnd) + ".mat")
     
 end
 
