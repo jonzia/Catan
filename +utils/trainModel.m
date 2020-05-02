@@ -57,15 +57,32 @@ end
 
 % Define model architecture
 layers = [
+    % Initial input layer
     sequenceInputLayer(165 + (numPlayers - 1)*10,"Name","sequence")
+    
+    % First FC layer
     fullyConnectedLayer(100,"Name","fc_1") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_1")
     dropoutLayer(dropout,"Name","dropout_1")
-    fullyConnectedLayer(25,"Name","fc_2") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    
+    % Second FC layer
+    fullyConnectedLayer(50,"Name","fc_2") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_2")
     dropoutLayer(dropout,"Name","dropout_2")
-    fullyConnectedLayer(1,"Name","fc_3") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    
+    % Third FC layer
+    fullyConnectedLayer(25,"Name","fc_3") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
     reluLayer("Name","relu_3")
+    dropoutLayer(dropout,"Name","dropout_3")
+    
+    % Fourth FC layer
+    fullyConnectedLayer(10,"Name","fc_4") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    reluLayer("Name","relu_4")
+    dropoutLayer(dropout,"Name","dropout_4")
+    
+    % Output layer
+    fullyConnectedLayer(1,"Name","fc_5") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
+    reluLayer("Name","relu_5")
     regressionLayer("Name","regressionoutput")];
 
 h = waitbar(0, 'Please wait...');
@@ -162,12 +179,17 @@ for rnd = 1:numRounds
         
     end
     
+    % Set up models for testing
+    testModels = cell(numPlayers, 1); testModels{end} = net;
+    
     % Test model against random policy
     for i = 1:numTest
         waitbar(i/numTest, h, "Testing Model " + string(i) + "/" + string(numTest));
         [~, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', ...
-            {net, []}, 'epsilon', 1, 'lambda', lambda, 'maxActions', maxActions);
-        if vp(end, 1) > vp(end, 2); winPercentage(rnd) = winPercentage(rnd) + 1/numTest; end
+            testModels, 'epsilon', 1, 'lambda', lambda, 'maxActions', maxActions);
+        % Get index of winner and update win percentage
+        [~, winPlayer] = max(vp(end, :));
+        if winPlayer == numPlayers; winPercentage(rnd) = winPercentage(rnd) + 1/numTest; end
     end
     
     % Save the workspace after each round
