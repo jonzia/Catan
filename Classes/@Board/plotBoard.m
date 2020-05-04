@@ -1,10 +1,13 @@
-function plotBoard(obj, varargin)
+function varargout = plotBoard(obj, varargin)
 
 % -------------------------------------------------------------------------
 % This function plots the game board based on the current state.
 %
 % Arguments (optional):
 % - handle      fig     Figure handle, if figure already initialized
+%
+% Outputs (optional):
+% - 
 % -------------------------------------------------------------------------
 
 % Set player colors
@@ -13,7 +16,7 @@ colors = {[0 0.4770 0.7410], [0.4660 0.6740 0.1880], ...
     [0.4940 0.1840 0.5560], [0.9290 0.6940 0.1250]};
 
 % Initialize the figure
-if isempty(varargin); figure; end
+if isempty(varargin); f = figure; else; f = gcf; clf; end
 hold on; set(gca, 'Visible', 'off')
 
 % For each tile...
@@ -105,6 +108,9 @@ for i = 1:length(obj.edges)
         
     end
 end
+
+% Set output arguments
+if nargout > 0; varargout{1} = f; end
 
 end
 

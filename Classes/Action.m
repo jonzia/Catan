@@ -57,7 +57,7 @@ classdef Action
                     description = "Player " + string(player) + " moved thief to tile " + string(obj.metadata{1}) + ...
                         " and stole from Player " + string(obj.metadata{2});
                 case Type.discard
-                    description = "Player " + string(player) + " discarded " + string(obj.metadata{1}) + " cards";
+                    description = "Player " + string(player) + " discarded " + string(obj.metadata) + " cards";
             end
             
         end

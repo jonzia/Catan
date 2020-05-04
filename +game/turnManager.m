@@ -13,6 +13,7 @@ function board = turnManager(board, turn, computer, model, varargin)
 % Arguments (optional)
 % - roll        Bool    If true, players enter dice roll manually
 % - maxActions  Int     Maximum number of actions by computer
+% - figure              Figure handle
 % -------------------------------------------------------------------------
 
 % Parse optional input arguments
@@ -20,6 +21,7 @@ if ~isempty(varargin)
     for arg = 1:length(varargin)
         if strcmp(varargin{arg}, 'roll'); roll = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'figure'); f = varargin{arg + 1};
         end
     end
 end
@@ -27,6 +29,7 @@ end
 % Set defaults for optional arguments
 if ~exist('roll', 'var'); roll = false; end
 if ~exist('maxActions', 'var'); maxActions = inf; end
+if ~exist('f', 'var'); f = []; end
 
 % Get the number of players
 numPlayers = board.numPlayers; initFLAG = false;
@@ -121,7 +124,7 @@ if turn <= 2*numPlayers && initFLAG
     end
     
     % Return when complete
-    close all; board.plotBoard(); return
+    if ~isempty(f); board.plotBoard(f); else; board.plotBoard(); end; return
     
 end
 
@@ -214,7 +217,7 @@ if player == computer
                 ". Do you accept? (y/n): ", 's');
             
             % If they find the trade favorable, proceed
-            if response == y
+            if response == 'y'
                 board = actions{idx}; log{idx}.getDescription(player);
             else
                 % Otherwise, add the move to the prohibited list
@@ -293,6 +296,9 @@ else
         if ~valid; disp("Error: Invalid move. Move not recorded.");
         else; disp("Successfully moved thief.")
         end
+        
+        % Refresh the board and print resources
+        if ~isempty(f); board.plotBoard(f); else; board.plotBoard(); end; printResources();
         
     end
     
@@ -514,7 +520,7 @@ else
         end
         
         % Refresh the board and print resources
-        close all; board.plotBoard(); printResources();
+        if ~isempty(f); board.plotBoard(f); else; board.plotBoard(); end; printResources();
     
     end
     

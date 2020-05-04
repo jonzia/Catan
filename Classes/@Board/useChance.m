@@ -39,10 +39,6 @@ if card == Card.buildRoad
         isValid = false; return
     end
     
-    % Trade the card to the bank, if possible
-    [obj, isValid] = obj.tradeBank(player, Card.buildRoad, 1);
-    if ~isValid; return; end
-    
     % Give the player the necessary resource cards
     obj.players{player}.cards.brick = obj.players{player}.cards.brick + 2;
     obj.players{player}.cards.wood = obj.players{player}.cards.wood + 2;
@@ -61,6 +57,9 @@ if card == Card.buildRoad
     else
         [obj, ~] = obj.placeStructure(player, Structure.road, varargin{1}(1));
         [obj, ~] = obj.placeStructure(player, Structure.road, varargin{1}(2));
+        % Trade the card to the bank, if possible
+        [obj, isValid] = obj.tradeBank(player, Card.buildRoad, 1);
+        if ~isValid; return; end
     end
     
 end
@@ -71,11 +70,12 @@ end
 % -------------------------------------------------------------------------
 if card == Card.knight
     
-    % Trade the card to the bank, if possible
-    [obj, isValid] = obj.tradeBank(player, Card.knight, 1);
+    % Attempt to move the thief
+    [obj, isValid] = obj.moveThief(varargin{1}, player, varargin{2});
     if ~isValid; return; end
     
-    [obj, isValid] = obj.moveThief(varargin{1}, player, varargin{2});
+    % Trade the card to the bank, if possible
+    [obj, isValid] = obj.tradeBank(player, Card.knight, 1);
     if ~isValid; return; end
     
     % Increment the player's knight counter
@@ -120,6 +120,10 @@ if card == Card.monopoly
         
     end
     
+    % Trade the card to the bank, if possible
+    [obj, isValid] = obj.tradeBank(player, Card.monopoly, 1);
+    if ~isValid; return; end
+    
 end
 
 
@@ -153,5 +157,9 @@ if card == Card.plenty
         disp("Error in Board.useChance(): Invalid number of resource cards selected")
         isValid = false; return
     end
+    
+    % Trade the card to the bank, if possible
+    [obj, isValid] = obj.tradeBank(player, Card.plenty, 1);
+    if ~isValid; return; end
     
 end

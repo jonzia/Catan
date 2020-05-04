@@ -28,7 +28,7 @@ if ~exist('roll', 'var'); roll = false; end
 if ~exist('maxActions', 'var'); maxActions = inf; end
 
 % Initialize and plot the board
-board = Board(numPlayers); board.plotBoard();
+board = Board(numPlayers); f = board.plotBoard();
 
 % Set game flag and turn counter
 FLAG = true; turn = 1;
@@ -37,7 +37,7 @@ FLAG = true; turn = 1;
 while FLAG
     
     % Run turn
-    board = game.turnManager(board, turn, computer, model, 'roll', roll, 'maxActions', maxActions);
+    board = game.turnManager(board, turn, computer, model, 'roll', roll, 'maxActions', maxActions, 'figure', f);
     
     % Increment turn counter
     turn = turn + 1;
