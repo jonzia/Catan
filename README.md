@@ -4,7 +4,7 @@
 
 The core of this software package is a MATLAB-based simulator which runs Monte Carlo simulations of games of Settlers of Catan. Initially, this Monte Carlo simulator chooses actions at each turn by selecting a board state at random from the set of possible board states based on the player's available moves. During training, the simulator may instead select actions using an epsilon-greedy policy based on a learned quality function. This quality function may be learned in an unsupervised manner by having the computer play games against itself, using the data obtained from these simulations to further refine the quality function.
 
-## How to Use
+## Package Organization
 
 Monte Carlo simulations may be run using the function `utils.runMonteCarlo()`, while model training and testing may be performed using the function `utils.trainModel()`. The `utils` package contain helper functions for model training and testing, and various member functions of user-defined classes. For additional information on calling each function, use the MATLAB `help` function followed by the function name (e.g. `help utils.trainModel`).
 
@@ -26,4 +26,4 @@ This function returns the trained quality function, win percentage of the model 
 
 ## Running a Trained Model 
 
-The file `trainedModel.mat` contains a trained neural network quality function which may be used in conjunction with the utility functions provided in this repository to run Monte Carlo simulations or suggest optimal moves in actual-play games. To do the latter, one must currently use the MATLAB command line interface; a detailed user guide on using this command line interface will be released in a subsequent update. In summary, the trained network may be applied to each valid action given the current the board state, obtained via `utils.getState()` and `utils.getActions()` or related action-retrieval functions.
+The file `trainedModel.mat` contains a trained neural network quality function which may be used in conjunction with the utility functions provided in this repository to run Monte Carlo simulations or suggest optimal moves in actual-play games. To do the latter, one may use the provided function `game.gameManager()`, which interfaces with the scripts in this package and the trained quality function to enable the user to play a game using the MATLAB command line interface in conjunction with a graphical representation of the game board (shown above).
