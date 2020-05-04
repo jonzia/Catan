@@ -7,7 +7,7 @@ function [results, VP] = runMonteCarlo(varargin)
 % Arguments (optional):
 % - model       {Model}     Player-specific models for ranking actions
 % - epsilon                 Likelihood [0, 1] for selecting optiomal action
-% - lambda                  Maximum game length
+% - maxTurns                Maximum game length
 % - numPlayers              [1, 6]
 % - maxActions              Maximum actions by player per turn
 % - verbose     FLAG        Plot output?
@@ -22,7 +22,7 @@ if ~isempty(varargin)
     for arg = 1:length(varargin)
         if strcmp(varargin{arg}, 'model'); model = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'epsilon'); epsilon = varargin{arg + 1};
-        elseif strcmp(varargin{arg}, 'lambda'); lambda = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTurns'); maxTurns = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'numPlayers'); numPlayers = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'verbose'); verbose = true;
@@ -32,7 +32,7 @@ end
 
 % Set defaults for optional arguments
 if ~exist('epsilon', 'var'); epsilon = 0.5; end
-if ~exist('lambda', 'var'); lambda = 1000; end
+if ~exist('lambda', 'var'); maxTurns = 1000; end
 if ~exist('numPlayers', 'var'); numPlayers = 2; end
 if ~exist('model', 'var'); model = cell(numPlayers, 1); end
 if ~exist('maxActions', 'var'); maxActions = 5; end
@@ -191,7 +191,7 @@ while ~gameOVER
     end
     
     % Determine whether the maximum number of turns have been made
-    turnCounter = turnCounter + 1; if turnCounter >= lambda; gameOVER = true; end
+    turnCounter = turnCounter + 1; if turnCounter >= maxTurns; gameOVER = true; end
     
     % Determine whether win condition has been met by any player
     for i = 1:numPlayers

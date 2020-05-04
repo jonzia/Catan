@@ -18,18 +18,20 @@ function [net, winPercentage, data, targets] = trainModel(varargin)
 % - batchSize       Int         Minibatch size (d: 32)
 % - patience        Int         Validation patience (d: 5)
 % - epsilon         Dbl         Initial epsilon (d: 0.75)
-% - lambda          Int         Maximum turns per game (d: 1000)
+% - maxTurns        Int         Maximum turns per game (d: 1000)
 % - maxActions      Int         Maximum number of actions / turn (d: 5)
 % - validFreq       Int         Validation frequency (d: 10)
 % - path            String      Path to save data (d: "")
+% - lambda          Int         Number of steps for TD learning (d: inf)
+% - hidden          [Int]       Vector of hidden layer sizes (d: [100, 50, 25, 10])
 % -------------------------------------------------------------------------
 
 % Set defaults for optional arguments
 numPlayers = 2; lrInit = 0.001; lrDecay = 0.1;
 lrDecayCounter = 3; numRounds = 10; numGames = 100; numTest = 10;
 split = 0.7; dropout = 0.2; maxEpochs = 100; batchSize = 32;
-patience = 5; epsilon = 0.75; lambda = 1000; maxActions = 5;
-validFreq = 10; path = "";
+patience = 5; epsilon = 0.75; maxTurns = 1000; maxActions = 5;
+validFreq = 10; path = ""; lambda = inf; hidden = [100, 50, 25, 10];
 
 % Parse optional input arguments
 if ~isempty(varargin)
@@ -47,43 +49,30 @@ if ~isempty(varargin)
         elseif strcmp(varargin{arg}, 'batchSize'); batchSize = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'patience'); patience = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'epsilon'); epsilon = varargin{arg + 1};
-        elseif strcmp(varargin{arg}, 'lambda'); lambda = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTurns'); maxTurns = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'validFreq'); validFreq = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'path'); path = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'lambda'); path = varargin{arg + 1};
         end
     end
 end
 
-% Define model architecture
-layers = [
-    % Initial input layer
-    sequenceInputLayer(165 + (numPlayers - 1)*10,"Name","sequence")
-    
-    % First FC layer
-    fullyConnectedLayer(100,"Name","fc_1") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
-    reluLayer("Name","relu_1")
-    dropoutLayer(dropout,"Name","dropout_1")
-    
-    % Second FC layer
-    fullyConnectedLayer(50,"Name","fc_2") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
-    reluLayer("Name","relu_2")
-    dropoutLayer(dropout,"Name","dropout_2")
-    
-    % Third FC layer
-    fullyConnectedLayer(25,"Name","fc_3") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
-    reluLayer("Name","relu_3")
-    dropoutLayer(dropout,"Name","dropout_3")
-    
-    % Fourth FC layer
-    fullyConnectedLayer(10,"Name","fc_4") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
-    reluLayer("Name","relu_4")
-    dropoutLayer(dropout,"Name","dropout_4")
-    
-    % Output layer
-    fullyConnectedLayer(1,"Name","fc_5") %,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
-    reluLayer("Name","relu_5")
-    regressionLayer("Name","regressionoutput")];
+% Initial input layer
+layers = sequenceInputLayer(165 + (numPlayers - 1)*10, "Name", "sequence");
+
+% Hidden layers
+for i = 1:length(hidden)
+    layers = [layers fullyConnectedLayer(hidden(i), "Name", "fc_" + string(i))];
+    layers = [layers reluLayer("Name", "relu_" + string(i))];
+    layers = [layers dropoutLayer(dropout, "Name", "dropout_" + string(i))];
+end
+
+% Output layer
+layers = [layers fullyConnectedLayer(1,"Name","fc_out")];
+layers = [layers reluLayer("Name","relu_out")];
+layers = [layers regressionLayer("Name","regressionoutput")];
+%,"BiasInitializer","narrow-normal","WeightsInitializer","narrow-normal")
 
 h = waitbar(0, 'Please wait...');
 
@@ -105,39 +94,43 @@ for rnd = 1:numRounds
         % Perform monte carlo simulation randomly if first round
         if rnd == 1
             [results, vp] = utils.runMonteCarlo('numPlayers', numPlayers, ...
-                'lambda', lambda, 'maxActions', maxActions);
+                'maxTurns', maxTurns, 'maxActions', maxActions);
         else
             % Otherwise, use the model
             models = cell(numPlayers, 1); models(:) = {net};
             [results, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', models, ...
-                'epsilon', epsilon, 'lambda', lambda, 'maxActions', maxActions);
+                'epsilon', epsilon, 'maxTurns', maxTurns, 'maxActions', maxActions);
         end
         
         % Get results from current game
         gameData = []; gameTargets = [];
         for i = 1:numPlayers
+            
             % Get data vectors
             gameData = [gameData; results(:, i)];
+            
             % Get target outputs
-            temp = cell(size(results, 1), 1); temp(:) = {vp(end, i)};
-            gameTargets = [gameTargets; temp];
+            if isinf(lambda)
+                % If lambda is infinity, label all moves by the final label
+                temp = cell(size(results, 1), 1); temp(:) = {vp(end, i)};
+                gameTargets = [gameTargets; temp];
+            else
+                % Otherwise, forecast UP TO lambda moves in the future
+                temp_vp = vp(:, i); temp_vp(end:end+lambda) = temp_vp(end);
+                temp_vp(1:size(results, 1)) = temp_vp(lambda:size(results, 1)+lambda);
+                temp = cell(size(results, 1), 1);
+                for j = 1:length(temp); temp{j} = temp_vp(j); end
+                gameTargets = [gameTargets; temp];
+            end
+            
         end
         
         % Save game data
         data = [data; gameData]; targets = [targets; gameTargets];
         roundData = [roundData; gameData]; roundTargets = [roundTargets; gameTargets];
         
-        % Get results
-        for i = 1:numPlayers
-            % Get data vectors
-            data = [data; results(:, i)];
-            % Get target outputs
-            temp = cell(size(results, 1), 1); temp(:) = {vp(end, i)};
-            targets = [targets; temp];
-        end
-        
         % Get the index of the games used for training (vs. validation)
-        if game == round(split*10); idx = size(roundData, 1); end
+        if game == round(split*numGames); idx = size(roundData, 1); end
         
     end
     
@@ -170,7 +163,7 @@ for rnd = 1:numRounds
         % Train network
         if counter == 0; net = trainNetwork(trainData, trainLabels, layers, options);
         else
-            net_2 = trainNetwork(data, targets, net.Layers, options);
+            net_2 = trainNetwork(trainData, trainLabels, net.Layers, options);
             clear net; net = net_2;
         end
         
@@ -186,7 +179,7 @@ for rnd = 1:numRounds
     for i = 1:numTest
         waitbar(i/numTest, h, "Testing Model " + string(i) + "/" + string(numTest));
         [~, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', ...
-            testModels, 'epsilon', 1, 'lambda', lambda, 'maxActions', maxActions);
+            testModels, 'epsilon', 1, 'maxTurns', maxTurns, 'maxActions', maxActions);
         % Get index of winner and update win percentage
         [~, winPlayer] = max(vp(end, :));
         if winPlayer == numPlayers; winPercentage(rnd) = winPercentage(rnd) + 1/numTest; end
