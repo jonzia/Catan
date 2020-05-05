@@ -217,7 +217,7 @@ if player == computer
                 ". Do you accept? (y/n): ", 's');
             
             % If they find the trade favorable, proceed
-            if response == 'y'
+            if strcmp(response, "y")
                 board = actions{idx}; log{idx}.getDescription(player);
             else
                 % Otherwise, add the move to the prohibited list
@@ -495,8 +495,8 @@ else
                     if valid
                         
                         % Prompt the other player to approve/deny the trade
-                        y = input("Does Player " + string(x) + " approve? (y/n): ");
-                        if y == 'y'
+                        y = input("Does Player " + string(x) + " approve? (y/n): ", 's');
+                        if strcmp(y, "y")
                             % If they approve, conduct the trade
                             board = trade; disp("Trade accepted.")
                         else
