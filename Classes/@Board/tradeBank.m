@@ -128,9 +128,10 @@ if toResource ~= Resource.none
         % If the node contains a structure owned by the player and has an
         % associated harbor with the appropriate resource, get the cost
         if obj.nodes{i}.structure ~= Structure.none && ...
-                obj.nodes{i}.player == player && ~isempty(obj.nodes{i}.harbor) && ...
-                obj.nodes{i}.harbor.resource == fromResource
-            cost = obj.nodes{i}.harbor.cost;
+                obj.nodes{i}.player == player && ~isempty(obj.nodes{i}.harbor)
+                if obj.nodes{i}.harbor.resource == fromResource || obj.nodes{i}.harbor.resource == Resource.all
+                    cost = obj.nodes{i}.harbor.cost;
+                end
         end   
     end
     
