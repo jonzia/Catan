@@ -13,6 +13,7 @@ function board = turnManager(board, turn, computer, model, varargin)
 % Arguments (optional)
 % - roll        Bool    If true, players enter dice roll manually
 % - maxActions  Int     Maximum number of actions by computer
+% - maxTrades   Int     Maximum number of trades by computer
 % - figure              Figure handle
 % -------------------------------------------------------------------------
 
@@ -21,6 +22,7 @@ if ~isempty(varargin)
     for arg = 1:length(varargin)
         if strcmp(varargin{arg}, 'roll'); roll = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTrades'); maxTrades = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'figure'); f = varargin{arg + 1};
         end
     end
@@ -29,6 +31,7 @@ end
 % Set defaults for optional arguments
 if ~exist('roll', 'var'); roll = false; end
 if ~exist('maxActions', 'var'); maxActions = inf; end
+if ~exist('maxTrades', 'var'); maxTrades = inf; end
 if ~exist('f', 'var'); f = []; end
 
 % Get the number of players
@@ -184,6 +187,9 @@ if player == computer
     % Create a placeholder for prohibited trades this turn
     prohibited = {};
     
+    % Initialize a trade counter for this turn
+    tradeCounter = 0;
+    
     while turnFLAG
         
         % Determine possible actions
@@ -209,25 +215,35 @@ if player == computer
             board = actions{idx}; log{idx}.getDescription(player);
         else
             
-            % Else, notify the player that the computer has offered them a
-            % deal. Ask whether they accept the deal.
-            response = input("The computer has offered to give Player " + ...
-                string(log{idx}.metadata{3}) + " a " + string(log{idx}.metadata{1}) + ...
-                " in exchange for a " + string(log{idx}.metadata{2}) + ...
-                ". Do you accept? (y/n): ", 's');
+            % Increment the trade counter
+            tradeCounter = tradeCounter + 1;
             
-            % If they find the trade favorable, proceed
-            if strcmp(response, "y")
-                board = actions{idx}; log{idx}.getDescription(player);
+            % If the maximum number of trades has been exceded, add the
+            % move to the prohibited list
+            if tradeCounter > maxTrades; prohibited{end + 1} = log{idx};
             else
-                % Otherwise, add the move to the prohibited list
-                prohibited{end + 1} = log{idx};
+                
+                % Else, notify the player that the computer has offered them a
+                % deal. Ask whether they accept the deal.
+                response = input("The computer has offered to give Player " + ...
+                    string(log{idx}.metadata{3}) + " a " + string(log{idx}.metadata{1}) + ...
+                    " in exchange for a " + string(log{idx}.metadata{2}) + ...
+                    ". Do you accept? (y/n): ", 's');
+
+                % If they find the trade favorable, proceed
+                if strcmp(response, "y")
+                    board = actions{idx}; log{idx}.getDescription(player);
+                else
+                    % Otherwise, add the move to the prohibited list
+                    prohibited{end + 1} = log{idx};
+                end
+                
+                % Increment the turn counter
+                counter = counter + 1;
+                
             end
             
         end
-        
-        % Increment the turn counter
-        counter = counter + 1;
         
         % If the action type is "pass" end the turn
         if log{idx}.actionType == Type.pass; turnFLAG = false;

@@ -12,6 +12,7 @@ function board = gameManager(numPlayers, computer, model, varargin)
 % Arguments (optional)
 % - roll        Bool    Indicates whether dice will be rolled manually (d: false)
 % - maxActions  Int     Maximum number of actions by computer (d: inf)
+% - maxTrades   Int     Maximum number of trades by computer (d: inf)
 % -------------------------------------------------------------------------
 
 % Parse optional input arguments
@@ -19,6 +20,7 @@ if ~isempty(varargin)
     for arg = 1:length(varargin)
         if strcmp(varargin{arg}, 'roll'); roll = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTrades'); maxTrades = varargin{arg + 1};
         end
     end
 end
@@ -26,6 +28,7 @@ end
 % Set defaults for optional arguments
 if ~exist('roll', 'var'); roll = false; end
 if ~exist('maxActions', 'var'); maxActions = inf; end
+if ~exist('maxTrades', 'var'); maxTrades = inf; end
 
 % Initialize and plot the board
 board = Board(numPlayers); f = board.plotBoard();
@@ -37,7 +40,8 @@ FLAG = true; turn = 1;
 while FLAG
     
     % Run turn
-    board = game.turnManager(board, turn, computer, model, 'roll', roll, 'maxActions', maxActions, 'figure', f);
+    board = game.turnManager(board, turn, computer, model, 'roll', roll, 'maxActions', maxActions, 'figure', f, ...
+        'maxTrades', maxTrades);
     
     % Increment turn counter
     turn = turn + 1;

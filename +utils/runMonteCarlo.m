@@ -10,6 +10,7 @@ function [results, VP] = runMonteCarlo(varargin)
 % - maxTurns                Maximum game length
 % - numPlayers              [1, 6]
 % - maxActions              Maximum actions by player per turn
+% - maxTrades               Maximum trades proposed by player per turn
 % - verbose     FLAG        Plot output?
 % - figure                  Figure handle
 % -------------------------------------------------------------------------
@@ -25,6 +26,7 @@ if ~isempty(varargin)
         elseif strcmp(varargin{arg}, 'maxTurns'); maxTurns = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'numPlayers'); numPlayers = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTrades'); maxTrades = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'verbose'); verbose = true;
         end
     end
@@ -36,6 +38,7 @@ if ~exist('lambda', 'var'); maxTurns = 1000; end
 if ~exist('numPlayers', 'var'); numPlayers = 2; end
 if ~exist('model', 'var'); model = cell(numPlayers, 1); end
 if ~exist('maxActions', 'var'); maxActions = 5; end
+if ~exist('maxTrades', 'var'); maxTrades = 5; end
 if ~exist('verbose', 'var'); verbose = false; end
 
 % Initialize and visualize game board
@@ -128,6 +131,9 @@ while ~gameOVER
     % Create a placeholder for prohibited trades this turn
     prohibited = {};
     
+    % Initialize trade counter
+    tradeCounter = 0;
+    
     while turnFLAG
         
         % Determine possible actions
@@ -165,18 +171,30 @@ while ~gameOVER
         if log{idx}.actionType ~= Type.tradePlayer; board = actions{idx}; ...
                 if verbose; disp(log{idx}.getDescription(player)); end
         else
-            % Else, have the target player rank the proposed board states
-            rank = utils.rankActions({board, actions{idx}}, model{player}, player);
-            % If they find the trade favorable, proceed; else, add the
-            % trade to the temporary prohibited turn list and pass
-            if rank(1) == 2; board = actions{idx}; ...
-                    if verbose; disp(log{idx}.getDescription(player)); end
-            else; prohibited{end + 1} = log{idx};
+            
+            % Increment the trade counter
+            tradeCounter = tradeCounter + 1;
+            
+            % If the maximum number of trades has been exceded, add the
+            % move to the prohibited list
+            if tradeCounter > maxTrades; prohibited{end + 1} = log{idx};
+            else
+                
+                % Else, have the target player rank the proposed board states
+                rank = utils.rankActions({board, actions{idx}}, model{player}, player);
+                % If they find the trade favorable, proceed; else, add the
+                % trade to the temporary prohibited turn list and pass
+                if rank(1) == 2; board = actions{idx}; ...
+                        if verbose; disp(log{idx}.getDescription(player)); end
+                else; prohibited{end + 1} = log{idx};
+                end
+                
+                % Increment the turn counter
+                counter = counter + 1;
+                
             end
+            
         end
-        
-        % Increment the turn counter
-        counter = counter + 1;
         
         % If the action type is "pass" end the turn
         if log{idx}.actionType == Type.pass; turnFLAG = false;

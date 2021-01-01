@@ -20,6 +20,7 @@ function [net, winPercentage, data, targets] = trainModel(varargin)
 % - epsilon         Dbl         Initial epsilon (d: 0.75)
 % - maxTurns        Int         Maximum turns per game (d: 1000)
 % - maxActions      Int         Maximum number of actions / turn (d: 5)
+% - maxTrades       Int         Maximum number of trades / turn (d: 5)
 % - validFreq       Int         Validation frequency (d: 10)
 % - path            String      Path to save data (d: "")
 % - lambda          Int         Number of steps for TD learning (d: inf)
@@ -30,7 +31,7 @@ function [net, winPercentage, data, targets] = trainModel(varargin)
 numPlayers = 2; lrInit = 0.001; lrDecay = 0.1;
 lrDecayCounter = 3; numRounds = 10; numGames = 100; numTest = 10;
 split = 0.7; dropout = 0.2; maxEpochs = 100; batchSize = 32;
-patience = 5; epsilon = 0.75; maxTurns = 1000; maxActions = 5;
+patience = 5; epsilon = 0.75; maxTurns = 1000; maxActions = 5; maxTrades = 5;
 validFreq = 10; path = ""; lambda = inf; hidden = [100, 50, 25, 10];
 
 % Parse optional input arguments
@@ -51,6 +52,7 @@ if ~isempty(varargin)
         elseif strcmp(varargin{arg}, 'epsilon'); epsilon = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxTurns'); maxTurns = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'maxActions'); maxActions = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'maxTrades'); maxTrades = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'validFreq'); validFreq = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'path'); path = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'lambda'); path = varargin{arg + 1};
@@ -94,12 +96,12 @@ for rnd = 1:numRounds
         % Perform monte carlo simulation randomly if first round
         if rnd == 1
             [results, vp] = utils.runMonteCarlo('numPlayers', numPlayers, ...
-                'maxTurns', maxTurns, 'maxActions', maxActions);
+                'maxTurns', maxTurns, 'maxActions', maxActions, 'maxTrades', maxTrades);
         else
             % Otherwise, use the model
             models = cell(numPlayers, 1); models(:) = {net};
             [results, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', models, ...
-                'epsilon', epsilon, 'maxTurns', maxTurns, 'maxActions', maxActions);
+                'epsilon', epsilon, 'maxTurns', maxTurns, 'maxActions', maxActions, 'maxTrades', maxTrades);
         end
         
         % Get results from current game
@@ -179,7 +181,7 @@ for rnd = 1:numRounds
     for i = 1:numTest
         waitbar(i/numTest, h, "Testing Model " + string(i) + "/" + string(numTest));
         [~, vp] = utils.runMonteCarlo('numPlayers', numPlayers, 'model', ...
-            testModels, 'epsilon', 1, 'maxTurns', maxTurns, 'maxActions', maxActions);
+            testModels, 'epsilon', 1, 'maxTurns', maxTurns, 'maxActions', maxActions, 'maxTrades', maxTrades);
         % Get index of winner and update win percentage
         [~, winPlayer] = max(vp(end, :));
         if winPlayer == numPlayers; winPercentage(rnd) = winPercentage(rnd) + 1/numTest; end
