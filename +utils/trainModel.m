@@ -55,7 +55,7 @@ if ~isempty(varargin)
         elseif strcmp(varargin{arg}, 'maxTrades'); maxTrades = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'validFreq'); validFreq = varargin{arg + 1};
         elseif strcmp(varargin{arg}, 'path'); path = varargin{arg + 1};
-        elseif strcmp(varargin{arg}, 'lambda'); path = varargin{arg + 1};
+        elseif strcmp(varargin{arg}, 'lambda'); lambda = varargin{arg + 1};
         end
     end
 end
