@@ -11,8 +11,8 @@ Monte Carlo simulations may be run using the function `utils.runMonteCarlo()`, w
 The `Classes` folder contains various user-defined classes (and enumerations) important for defining the game board. The most notable of these is the `Board` class, which contains properties and methods related to the game board and bank, as well as enabling basic moves and transactions. More information on each class and enumeration may be found in the main file (e.g. `Board.m`).
 
 ![Image](https://i.imgur.com/Ji1fG7q.png)
-|:--:| 
-| Example result of running `utils.runMonteCarlo()`. |
+
+**Example result of running `utils.runMonteCarlo()`.**
 
 ## Monte Carlo Simulator
 
